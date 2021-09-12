@@ -1,0 +1,40 @@
+---
+
+- name: Install required packages
+  package:
+    name: '{{ item }}'
+    state: present
+  register: status
+  retries: 10
+  delay: 2
+  until: status is success
+  with_items:
+  - "openssh-server"
+  - "git"
+  - "net-tools"
+  - "wget"
+  - "lsof"
+  - "unzip"
+  - "java-1.8.0-openjdk"
+
+- name: Start and enable openssh server
+  service:
+    name: "{{ sshd_service_name }}"
+    state: started
+    enabled: true
+
+- name: Create Worker Node user
+  include_tasks: user.yml
+
+- name: Prepare Worker Node
+  include_tasks: maven.yml
+
+- name: Install slave jenkins agent
+  jenkins_script:
+    user: '{{ master_username }}'
+    password: '{{ master_password }}'
+    validate_certs: false
+    timeout: 120
+    url: '{{ master_url }}'
+    script: >-
+      {{ lookup('template', 'add_linux_slave.groovy.j2') }}

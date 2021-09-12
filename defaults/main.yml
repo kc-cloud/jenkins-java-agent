@@ -1,0 +1,31 @@
+---
+sshd_service_name: sshd
+
+# Worker node user
+user: jenkins
+group: jenkins
+
+# jenkins master
+master_username: admin
+master_password: admin
+master_url: "http://172.31.19.33:8080"
+
+# Maven
+maven_major: 3
+maven_version: 3.3.9
+maven_home_parent_directory: /opt
+maven_env_file: "/etc/profile.d/maven.sh"
+
+# general slave
+slave_agent_name: agent
+slave_executors_num: 1
+slave_environments: {}
+slave_mode_exclusive: false
+
+# jenkins linux slave
+slave_linux_host: "{{ worker_ip_address }}"
+slave_linux_ssh_port: 22
+slave_linux_home: /opt/jenkins
+jenkins_worker_cred_id: ci_slave
+slave_linux_labels:
+  - java_maven

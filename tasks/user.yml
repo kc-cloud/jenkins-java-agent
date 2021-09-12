@@ -1,0 +1,37 @@
+---
+- name: Make sure we have a 'wheel' group
+  group:
+    name: wheel
+    state: present
+
+- name: Allow 'wheel' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '{{ user }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+- name: Add sudoers users to wheel group
+  user: 
+    name: '{{ user }}'
+    groups: wheel
+    append: yes
+    state: present
+    createhome: yes
+
+- name: Set up authorized keys for the worker node user
+  authorized_key:
+    user: '{{ user }}'
+    key: "{{ item }}"
+  with_file:
+  - "{{ role_path }}/files/ssh.crt"
+- name: Change user home folders permissions
+  file:
+    path: "/home/{{ user }}"
+    state: directory
+    mode: 0750
+
+- name: Update local initialization file permissions
+  shell: chmod 0740 /home/{{ user }}/.[^.]*
+
